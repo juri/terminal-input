@@ -6,6 +6,7 @@
 
 public enum KeyCommand: Sendable {
     case backspace
+    case backtab
     case character(Character)
     case delete
     case deleteToEnd

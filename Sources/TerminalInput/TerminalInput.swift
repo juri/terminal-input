@@ -49,6 +49,7 @@ public enum KeyReader {
                     case (0x1B, 0x5B, 0x42): key = .down
                     case (0x1B, 0x5B, 0x43): key = .right
                     case (0x1B, 0x5B, 0x44): key = .left
+                    case (0x1B, 0x5B, 0x5A): key = .backtab
                     default: continue loop
                     }
                     consumeStart(array: &buffer, bytes: 3)
