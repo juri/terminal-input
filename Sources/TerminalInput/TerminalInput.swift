@@ -28,6 +28,7 @@ public enum KeyReader {
                 }
                 if bufferPoint == 1 {
                     switch buffer[0] {
+                    case 0x00: key = .null
                     case 0x01: key = .moveToStart
                     case 0x03: key = .terminate
                     case 0x04: key = .delete
@@ -38,6 +39,11 @@ public enum KeyReader {
                     case 0x14: key = .transpose
                     case 0x15: key = .deleteToStart
                     case 0x1A: key = .suspend
+                    case 0x1B: key = .esc
+                    case 0x1C: key = .fileSeparator
+                    case 0x1D: key = .groupSeparator
+                    case 0x1E: key = .recordSeparator
+                    case 0x1F: key = .unitSeparator
                     case 0x7F: key = .backspace
                     default: key = .character(Character(.init(buffer[0])))
                     }
