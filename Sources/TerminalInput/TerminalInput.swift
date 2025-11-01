@@ -43,7 +43,7 @@ public enum KeyReader {
                     }
                     consumeStart(array: &buffer, bytes: 1)
                     bufferPoint -= 1
-                } else if bufferPoint >= 3 {
+                } else if bufferPoint == 3 {
                     switch (buffer[0], buffer[1], buffer[2]) {
                     case (0x1B, 0x5B, 0x41): key = .up
                     case (0x1B, 0x5B, 0x42): key = .down
