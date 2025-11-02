@@ -5,14 +5,14 @@ import Synchronization
 public enum KeyReader {
     public static func readKeys(
         fileHandle: FileHandle,
-        to callback: @escaping @Sendable (KeyCommand) -> Void
+        to callback: @escaping @Sendable (KeyInput) -> Void
     ) -> Task<Void, Never> {
         Task.detached {
             let bufferSize = 32
             var buffer = [UInt8](repeating: 0, count: bufferSize)
             var bufferPoint = 0
             loop: while !Task.isCancelled {
-                let key: KeyCommand?
+                let key: KeyInput?
                 if bufferPoint < bufferSize {
                     var inputBuffer = [UInt8](repeating: 0, count: bufferSize - bufferPoint)
                     let bytesRead = read(fileHandle.fileDescriptor, &inputBuffer, bufferSize - bufferPoint)
@@ -28,26 +28,7 @@ public enum KeyReader {
                     continue loop
                 }
                 if bufferPoint == 1 {
-                    switch buffer[0] {
-                    case 0x00: key = .null
-                    case 0x01: key = .moveToStart
-                    case 0x03: key = .terminate
-                    case 0x04: key = .delete
-                    case 0x05: key = .moveToEnd
-                    case 0x09: key = .tab
-                    case 0x0B: key = .deleteToEnd
-                    case 0x0D: key = .return
-                    case 0x14: key = .transpose
-                    case 0x15: key = .deleteToStart
-                    case 0x1A: key = .suspend
-                    case 0x1B: key = .esc
-                    case 0x1C: key = .fileSeparator
-                    case 0x1D: key = .groupSeparator
-                    case 0x1E: key = .recordSeparator
-                    case 0x1F: key = .unitSeparator
-                    case 0x7F: key = .backspace
-                    default: key = .character(Character(.init(buffer[0])))
-                    }
+                    key = .byte(buffer[0])
                     consumeStart(array: &buffer, bytes: 1)
                     bufferPoint -= 1
                 } else if bufferPoint == 3 {
@@ -90,8 +71,8 @@ public enum KeyReader {
 
     public static func keyStream(
         fileHandle: FileHandle
-    ) -> AsyncStream<KeyCommand> {
-        let (stream, continuation) = AsyncStream<KeyCommand>.makeStream()
+    ) -> AsyncStream<KeyInput> {
+        let (stream, continuation) = AsyncStream<KeyInput>.makeStream()
 
         let task = self.readKeys(fileHandle: fileHandle) { result in
             continuation.yield(result)
@@ -169,12 +150,12 @@ public final class RawKeyReader {
     }
 
     public func readKeys(
-        to callback: @escaping @Sendable (KeyCommand) -> Void
+        to callback: @escaping @Sendable (KeyInput) -> Void
     ) -> Task<Void, Never> {
         KeyReader.readKeys(fileHandle: self.fileHandle, to: callback)
     }
 
-    public func keyStream() -> AsyncStream<KeyCommand> {
+    public func keyStream() -> AsyncStream<KeyInput> {
         KeyReader.keyStream(fileHandle: self.fileHandle)
     }
 }

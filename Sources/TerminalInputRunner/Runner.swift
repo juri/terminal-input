@@ -22,7 +22,8 @@ struct Runner {
         }
 
         try await KeyReader.inRawMode(fileHandle: ttyHandle) { rawReader in
-            loop: for await keyCommand in rawReader.keyStream() {
+            loop: for await keyInput in rawReader.keyStream() {
+                let keyCommand = KeyCommand(keyInput: keyInput)
                 switch keyCommand {
                 case .character("Q"):
                     print("Q pressed, quitting")
