@@ -12,6 +12,8 @@ public enum KeyReader {
             var buffer = [UInt8](repeating: 0, count: bufferSize)
             var bufferPoint = 0
             loop: while !Task.isCancelled {
+                precondition(bufferPoint >= 0)
+                precondition(bufferPoint < bufferSize)
                 let key: KeyInput?
                 if bufferPoint < bufferSize {
                     var inputBuffer = [UInt8](repeating: 0, count: bufferSize - bufferPoint)
