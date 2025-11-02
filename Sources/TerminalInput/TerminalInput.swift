@@ -1,8 +1,10 @@
 import Foundation
 import Synchronization
 
+/// `KeyReader` contains functions for reading keys and managing terminal raw mode.
 @MainActor
 public enum KeyReader {
+    /// Read ``KeyInput`` values from the terminal represented by `fileHandle` and send them to  `callback`
     public static func readKeys(
         fileHandle: FileHandle,
         to callback: @escaping @Sendable (KeyInput) -> Void
@@ -108,6 +110,7 @@ public enum KeyReader {
         }
     }
 
+    /// Create an `AsyncStream` of ``KeyInput`` values read from `fileHandle`.
     public static func keyStream(
         fileHandle: FileHandle
     ) -> AsyncStream<KeyInput> {
@@ -123,35 +126,41 @@ public enum KeyReader {
         return stream
     }
 
+    /// An error that represents a failure in a C standard library function.
     public struct CallFailure: Error {
         public let call: Call
         public let errno: Int32
 
+        /// The failed call.
         public enum Call: Sendable {
             case tcgetattr
             case tcsetattr
         }
     }
 
+    /// Run `closure` with the terminal represented by `fileHandle` set in raw mode.
     public static func inRawMode<T>(
         fileHandle: FileHandle,
-        _ body: (RawKeyReader) async -> T
+        closure: (RawKeyReader) async -> T
     ) async throws(CallFailure) -> T {
         let originalTermios = try self.setRaw(fileHandle: fileHandle)
         let rawReader = RawKeyReader(fileHandle: fileHandle)
-        let value = await body(rawReader)
+        let value = await closure(rawReader)
         try self.unsetRaw(fileHandle: fileHandle, originalTermios: originalTermios)
         return value
     }
 
+    /// `FailureInRawMode` represents an error that occured either in raw mode management or
+    /// inside the closure executed by ``inRawModeThrowing(fileHandle:closure:)``.
     public enum FailureInRawMode<E: Error>: Error {
         case callFailure(CallFailure)
         case other(E)
     }
 
+    /// Run the throwing `closure` with the terminal represented by `fileHandle` set in raw mode.
     public static func inRawModeThrowing<T, E>(
         fileHandle: FileHandle,
-        _ body: (RawKeyReader) async throws(E) -> T
+        closure: (RawKeyReader) async throws(E) -> T
     ) async throws(FailureInRawMode<E>) -> T {
         let originalTermios: termios
         do {
@@ -162,7 +171,7 @@ public enum KeyReader {
         let rawReader = RawKeyReader(fileHandle: fileHandle)
         let value: T
         do {
-            value = try await body(rawReader)
+            value = try await closure(rawReader)
         } catch {
             throw .other(error)
         }
@@ -174,6 +183,7 @@ public enum KeyReader {
         return value
     }
 
+    /// Set the terminal represented by `fileHandle` into raw mode.
     public static func setRaw(fileHandle: FileHandle) throws(CallFailure) -> termios {
         var originalTermios = termios()
 
@@ -199,6 +209,7 @@ public enum KeyReader {
         return originalTermios
     }
 
+    /// Unset raw mode in the terminal represented by `fileHandle`.
     public static func unsetRaw(
         fileHandle: FileHandle,
         originalTermios: termios,
@@ -210,6 +221,7 @@ public enum KeyReader {
     }
 }
 
+/// `RawKeyReader` is wraps a file handle and allows you to read keys more succintly that ``KeyReader``.
 @MainActor
 public final class RawKeyReader {
     private let fileHandle: FileHandle
@@ -218,12 +230,14 @@ public final class RawKeyReader {
         self.fileHandle = fileHandle
     }
 
+    /// Read ``KeyInput`` values from the wrapped terminal and send them to `callback`.
     public func readKeys(
         to callback: @escaping @Sendable (KeyInput) -> Void
     ) -> Task<Void, Never> {
         KeyReader.readKeys(fileHandle: self.fileHandle, to: callback)
     }
 
+    /// Create an `AsyncStream` of ``KeyInput`` values read from the wrapped file handle.
     public func keyStream() -> AsyncStream<KeyInput> {
         KeyReader.keyStream(fileHandle: self.fileHandle)
     }

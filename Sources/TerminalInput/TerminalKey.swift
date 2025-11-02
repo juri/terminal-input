@@ -4,6 +4,9 @@
 //  Created by Juri Pakaste on 30.10.2025.
 //
 
+/// `KeyCommand` reprents keys read from a terminal at a slightly higher level than ``KeyInput``.
+///
+/// It has the same values ``KeyInput``, but it contains named values for line-editing commands.
 public enum KeyCommand: Sendable {
     case backspace
     case backtab
@@ -51,6 +54,7 @@ public enum KeyCommand: Sendable {
     }
 }
 
+/// `KeyInput` is a single value read from a terminal.
 public enum KeyInput: Sendable {
     case backtab
     case byte(UInt8)
