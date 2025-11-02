@@ -32,16 +32,30 @@ public enum KeyReader {
                     consumeStart(array: &buffer, bytes: 1)
                     bufferPoint -= 1
                 } else if bufferPoint == 3 {
+                    var _key: KeyInput? = nil
                     switch (buffer[0], buffer[1], buffer[2]) {
-                    case (0x1B, 0x5B, 0x41): key = .up
-                    case (0x1B, 0x5B, 0x42): key = .down
-                    case (0x1B, 0x5B, 0x43): key = .right
-                    case (0x1B, 0x5B, 0x44): key = .left
-                    case (0x1B, 0x5B, 0x5A): key = .backtab
-                    default: continue loop
+                    case (0x1B, 0x5B, 0x41): _key = .up
+                    case (0x1B, 0x5B, 0x42): _key = .down
+                    case (0x1B, 0x5B, 0x43): _key = .right
+                    case (0x1B, 0x5B, 0x44): _key = .left
+                    case (0x1B, 0x5B, 0x5A): _key = .backtab
+                    default: break
                     }
-                    consumeStart(array: &buffer, bytes: 3)
-                    bufferPoint -= 3
+
+                    if let _key {
+                        consumeStart(array: &buffer, bytes: 3)
+                        bufferPoint -= 3
+                        key = _key
+                    } else if var str = String(bytes: buffer[0..<bufferPoint], encoding: .utf8), str.count > 0 {
+                        let first = str.removeFirst()
+                        let count = first.utf8.count
+                        consumeStart(array: &buffer, bytes: count)
+                        bufferPoint -= count
+                        key = .character(first)
+                    } else {
+                        key = nil
+                    }
+
                 } else if bufferPoint > 2 && buffer[0] == 0x1B && buffer[1] == 0x5B {
                     // CSI code, grab everything until we run out of buffered values or encounter a character
                     // in the range 0x40…0x7E.
