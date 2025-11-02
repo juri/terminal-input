@@ -8,13 +8,14 @@ public enum KeyReader {
         to callback: @escaping @Sendable (KeyCommand) -> Void
     ) -> Task<Void, Never> {
         Task.detached {
-            var buffer = [UInt8](repeating: 0, count: 4)
+            let bufferSize = 32
+            var buffer = [UInt8](repeating: 0, count: bufferSize)
             var bufferPoint = 0
             loop: while !Task.isCancelled {
                 let key: KeyCommand?
-                if bufferPoint < 4 {
-                    var inputBuffer = [UInt8](repeating: 0, count: 4 - bufferPoint)
-                    let bytesRead = read(fileHandle.fileDescriptor, &inputBuffer, 4 - bufferPoint)
+                if bufferPoint < bufferSize {
+                    var inputBuffer = [UInt8](repeating: 0, count: bufferSize - bufferPoint)
+                    let bytesRead = read(fileHandle.fileDescriptor, &inputBuffer, bufferSize - bufferPoint)
                     for byteIndex in 0..<bytesRead {
                         let byte = inputBuffer[byteIndex]
                         let targetIndex = bufferPoint + byteIndex
@@ -68,12 +69,12 @@ public enum KeyReader {
                     consumeStart(array: &buffer, bytes: count)
                     bufferPoint -= count
                     key = .character(first)
-                } else if bufferPoint == 4 {
+                } else if bufferPoint == bufferSize {
+                    print("buffer was full but we don't know what to with it, clear it")
                     // buffer is already full, and we apparently didn't know what to do with it.
-                    buffer[0] = 0
-                    buffer[1] = 0
-                    buffer[2] = 0
-                    buffer[3] = 0
+                    for i in 0 ..< bufferSize {
+                        buffer[i] = 0
+                    }
                     bufferPoint = 0
                     key = nil
                 } else {
