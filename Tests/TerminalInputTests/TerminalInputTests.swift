@@ -1,4 +1,5 @@
 import Testing
+
 @testable import TerminalInput
 
 @Test func example() async throws {

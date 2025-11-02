@@ -59,7 +59,6 @@ public enum KeyReader {
                     } else {
                         key = nil
                     }
-
                 } else if bufferPoint > 2 && buffer[0] == 0x1B && buffer[1] == 0x5B {
                     // CSI code, grab everything until we run out of buffered values or encounter a character
                     // in the range 0x40…0x7E.
@@ -68,7 +67,7 @@ public enum KeyReader {
                             if (0x40...0x7E).contains(buffer[i]) {
                                 guard let str = String(bytes: buffer[2...i], encoding: .utf8) else {
                                     // Failed to parse the control sequence, just throw everything away
-                                    for i in 0 ..< bufferSize {
+                                    for i in 0..<bufferSize {
                                         buffer[i] = 0
                                     }
                                     bufferPoint = 0
@@ -94,7 +93,7 @@ public enum KeyReader {
                 } else if bufferPoint == bufferSize {
                     print("buffer was full but we don't know what to with it, clear it")
                     // buffer is already full, and we apparently didn't know what to do with it.
-                    for i in 0 ..< bufferSize {
+                    for i in 0..<bufferSize {
                         buffer[i] = 0
                     }
                     bufferPoint = 0

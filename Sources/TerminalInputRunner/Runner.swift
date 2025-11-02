@@ -15,10 +15,10 @@ struct Runner {
         }
 
         print("terminal-input runner started. Type Q to quit.")
-        print("\u{001B}[?25l") // hide cursor
+        print("\u{001B}[?25l")  // hide cursor
 
         defer {
-            print("\u{001B}[?25h") // show cursor
+            print("\u{001B}[?25h")  // show cursor
         }
 
         try await KeyReader.inRawMode(fileHandle: ttyHandle) { rawReader in
@@ -30,7 +30,7 @@ struct Runner {
                     break loop
                 default:
                     print("Received key: \(keyCommand)")
-                    print("\u{001B}[0G", terminator: "") // move to line start
+                    print("\u{001B}[0G", terminator: "")  // move to line start
                 }
             }
         }
