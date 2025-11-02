@@ -144,6 +144,36 @@ public enum KeyReader {
         return value
     }
 
+    public enum FailureInRawMode<E: Error>: Error {
+        case callFailure(CallFailure)
+        case other(E)
+    }
+
+    public static func inRawModeThrowing<T, E>(
+        fileHandle: FileHandle,
+        _ body: (RawKeyReader) async throws(E) -> T
+    ) async throws(FailureInRawMode<E>) -> T {
+        let originalTermios: termios
+        do {
+            originalTermios = try self.setRaw(fileHandle: fileHandle)
+        } catch {
+            throw .callFailure(error)
+        }
+        let rawReader = RawKeyReader(fileHandle: fileHandle)
+        let value: T
+        do {
+            value = try await body(rawReader)
+        } catch {
+            throw .other(error)
+        }
+        do {
+            try self.unsetRaw(fileHandle: fileHandle, originalTermios: originalTermios)
+        } catch {
+            throw .callFailure(error)
+        }
+        return value
+    }
+
     public static func setRaw(fileHandle: FileHandle) throws(CallFailure) -> termios {
         var originalTermios = termios()
 
