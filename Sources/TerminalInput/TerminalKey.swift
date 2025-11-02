@@ -8,6 +8,7 @@ public enum KeyCommand: Sendable {
     case backspace
     case backtab
     case character(Character)
+    case controlSequence(String)
     case delete
     case deleteToEnd
     case deleteToStart
@@ -41,6 +42,7 @@ public enum KeyCommand: Sendable {
         case .byte(0x7F): self = .backspace
         case let .byte(b): self = .character(Character(Unicode.Scalar(b)))
         case let .character(c): self = .character(c)
+        case let .controlSequence(s): self = .controlSequence(s)
         case .down: self = .down
         case .left: self = .left
         case .right: self = .right
@@ -53,6 +55,7 @@ public enum KeyInput: Sendable {
     case backtab
     case byte(UInt8)
     case character(Character)
+    case controlSequence(String)
     case down
     case left
     case right
