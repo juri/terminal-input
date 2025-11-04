@@ -35,6 +35,12 @@ public enum KeyReader {
                     key = .byte(buffer[0])
                     consumeStart(array: &buffer, bytes: 1)
                     bufferPoint -= 1
+                } else if bufferPoint == 2 && buffer[0] == 0x1B,
+                    let str = String(bytes: buffer[1..<bufferPoint], encoding: .utf8)
+                {
+                    key = .escapeSequence(str)
+                    consumeStart(array: &buffer, bytes: 2)
+                    bufferPoint -= 2
                 } else if bufferPoint == 3 {
                     var _key: KeyInput? = nil
                     switch (buffer[0], buffer[1], buffer[2]) {
@@ -43,6 +49,10 @@ public enum KeyReader {
                     case (0x1B, 0x5B, 0x43): _key = .right
                     case (0x1B, 0x5B, 0x44): _key = .left
                     case (0x1B, 0x5B, 0x5A): _key = .backtab
+                    case let (0x1B, p1, p2):
+                        if let str = String(bytes: [p1, p2], encoding: .utf8) {
+                            _key = .escapeSequence(str)
+                        }
                     default: break
                     }
 

@@ -17,7 +17,10 @@ public enum KeyCommand: Sendable {
     case deleteToStart
     case down
     case esc
+    case escapeSequence(String)
     case left
+    case moveBackwardWord
+    case moveForwardWord
     case moveToEnd
     case moveToStart
     case `return`
@@ -46,6 +49,9 @@ public enum KeyCommand: Sendable {
         case let .byte(b): self = .character(Character(Unicode.Scalar(b)))
         case let .character(c): self = .character(c)
         case let .controlSequence(s): self = .controlSequence(s)
+        case .escapeSequence("b"): self = .moveBackwardWord
+        case .escapeSequence("f"): self = .moveForwardWord
+        case let .escapeSequence(s): self = .escapeSequence(s)
         case .down: self = .down
         case .left: self = .left
         case .right: self = .right
@@ -60,6 +66,7 @@ public enum KeyInput: Sendable {
     case byte(UInt8)
     case character(Character)
     case controlSequence(String)
+    case escapeSequence(String)
     case down
     case left
     case right
