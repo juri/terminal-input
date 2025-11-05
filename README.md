@@ -31,3 +31,10 @@ try await KeyReader.inRawMode(fileHandle: ttyHandle) { rawReader in
     }
 }
 ```
+
+## Documentation
+
+[Documentation] and `Package.swift` snippets are available at [Swift Package Index].
+
+[Documentation]: https://swiftpackageindex.com/juri/terminal-input/documentation/terminalinput
+[Swift Package Index]: https://swiftpackageindex.com/juri/terminal-input
