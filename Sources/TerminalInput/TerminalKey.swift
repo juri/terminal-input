@@ -24,6 +24,7 @@ public enum KeyCommand: Sendable, Hashable {
     case backtab
     case character(Character)
     case delete
+    case deleteBackwardWord
     case deleteToEnd
     case deleteToStart
     case down(Set<Modifier>)
@@ -47,6 +48,7 @@ public enum KeyCommand: Sendable, Hashable {
         case .byte(0x03): self = .terminate
         case .byte(0x04): self = .delete
         case .byte(0x05): self = .moveToEnd
+        case .byte(0x08): self = .deleteBackwardWord
         case .byte(0x09): self = .tab
         case .byte(0x0B): self = .deleteToEnd
         case .byte(0x0D): self = .return
