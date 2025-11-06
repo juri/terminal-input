@@ -36,7 +36,7 @@ public enum KeyReader {
                     consumeStart(array: &buffer, bytes: 1)
                     bufferPoint -= 1
                 } else if bufferPoint == 2 && buffer[0] == 0x1B,
-                    let str = String(bytes: buffer[1..<bufferPoint], encoding: .utf8)
+                    let str = String(bytes: buffer[0..<bufferPoint], encoding: .utf8)
                 {
                     key = .escapeSequence(str)
                     consumeStart(array: &buffer, bytes: 2)
@@ -69,29 +69,12 @@ public enum KeyReader {
                     } else {
                         key = nil
                     }
-                } else if bufferPoint > 2 && buffer[0] == 0x1B && buffer[1] == 0x5B {
-                    // CSI code, grab everything until we run out of buffered values or encounter a character
-                    // in the range 0x40…0x7E.
-                    parseControlSequence: do {
-                        for i in 2..<bufferPoint {
-                            if (0x40...0x7E).contains(buffer[i]) {
-                                guard let str = String(bytes: buffer[2...i], encoding: .utf8) else {
-                                    // Failed to parse the control sequence, just throw everything away
-                                    for i in 0..<bufferSize {
-                                        buffer[i] = 0
-                                    }
-                                    bufferPoint = 0
-                                    key = nil
-                                    continue loop
-                                }
-                                key = .controlSequence(str)
-                                consumeStart(array: &buffer, bytes: i + 1)
-                                bufferPoint -= i + 1
-                                break parseControlSequence
-                            }
-                        }
-                        key = nil
-                    }
+                } else if bufferPoint > 2 && buffer[0] == 0x1B && bufferPoint < bufferSize,
+                    let str = String(bytes: buffer[0..<bufferPoint], encoding: .utf8)
+                {
+                    key = .escapeSequence(str)
+                    consumeStart(array: &buffer, bytes: bufferPoint)
+                    bufferPoint = 0
                 } else if var str = String(bytes: buffer[0..<bufferPoint], encoding: .utf8),
                     str.count > 0
                 {
