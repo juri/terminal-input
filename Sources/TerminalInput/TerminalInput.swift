@@ -165,6 +165,7 @@ public enum KeyReader {
         do {
             value = try await closure(rawReader)
         } catch {
+            try? self.unsetRaw(fileHandle: fileHandle, originalTermios: originalTermios)
             throw .other(error)
         }
         do {
