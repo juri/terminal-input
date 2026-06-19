@@ -18,6 +18,16 @@ public enum KeyReader {
                 precondition(bufferPoint < bufferSize)
                 let key: KeyInput?
                 if bufferPoint < bufferSize {
+                    // Use poll() with a timeout so that task cancellation is checked regularly rather than blocking forever in read().
+                    // Without this, a cancelled task can steal the first keystroke intended for the next reader.
+                    var pfd = pollfd(
+                        fd: fileHandle.fileDescriptor,
+                        events: Int16(POLLIN),
+                        revents: 0
+                    )
+                    let ready = poll(&pfd, 1, 50)
+                    guard ready > 0 else { continue loop }
+
                     var inputBuffer = [UInt8](repeating: 0, count: bufferSize - bufferPoint)
                     let bytesRead = read(fileHandle.fileDescriptor, &inputBuffer, bufferSize - bufferPoint)
                     for byteIndex in 0..<bytesRead {
